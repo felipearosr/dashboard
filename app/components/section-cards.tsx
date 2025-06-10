@@ -1,3 +1,6 @@
+"use client"
+
+import * as React from "react"
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -9,15 +12,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+
+interface Summary {
+  total_processed: number
+  successful: number
+  errors: number
+  success_rate: number
+}
 
 export function SectionCards() {
+  const [summary, setSummary] = React.useState<Summary | null>(null)
+
+  React.useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        const response = await fetch(
+          "https://mzfbselut5.execute-api.us-east-1.amazonaws.com/dev/api/v1/overview/summary",
+          {
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        const data = await response.json()
+        setSummary(data)
+      } catch (error) {
+        console.error("Failed to fetch summary:", error)
+      }
+    }
+
+    fetchSummary()
+  }, [])
+
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Total Revenue</CardDescription>
+          <CardDescription>Documentos Procesados</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            $1,250.00
+            {summary ? (
+              summary.total_processed.toLocaleString()
+            ) : (
+              <Skeleton className="h-8 w-1/3" />
+            )}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -37,9 +76,13 @@ export function SectionCards() {
       </Card>
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>New Customers</CardDescription>
+          <CardDescription>Exitosos</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            1,234
+            {summary ? (
+              summary.successful.toLocaleString()
+            ) : (
+              <Skeleton className="h-8 w-1/3" />
+            )}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -59,9 +102,13 @@ export function SectionCards() {
       </Card>
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Active Accounts</CardDescription>
+          <CardDescription>Errores</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            45,678
+            {summary ? (
+              summary.errors.toLocaleString()
+            ) : (
+              <Skeleton className="h-8 w-1/3" />
+            )}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -79,9 +126,13 @@ export function SectionCards() {
       </Card>
       <Card className="@container/card">
         <CardHeader>
-          <CardDescription>Growth Rate</CardDescription>
+          <CardDescription>Tasa de Éxito</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            4.5%
+            {summary ? (
+              `${summary.success_rate.toFixed(2)}%`
+            ) : (
+              <Skeleton className="h-8 w-1/3" />
+            )}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
